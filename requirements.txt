@@ -1,0 +1,5 @@
+flask
+flask-cors
+weasyprint
+num2words
+python-dateutil

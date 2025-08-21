@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice</title>
+    <style>
+        @page { size: A4; margin: 0; }
+        body { font-family: 'Poppins', sans-serif; font-size: 9pt; }
+        .invoice-wrapper { background: #f0f4f8; padding: 40px; }
+        .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #3498db; padding-bottom: 20px; }
+        .header h1 { font-size: 2em; color: #3498db; margin: 0; }
+        .meta-info { display: flex; justify-content: space-between; margin-top: 30px; }
+        .items-table { width: 100%; border-collapse: collapse; margin-top: 30px; }
+        .items-table thead th { background: #3498db; color: white; padding: 12px; text-align: left; }
+        .items-table tbody tr:nth-child(even) { background: #ecf0f1; }
+        .items-table td { padding: 12px; }
+        .text-right { text-align: right; }
+        .summary { margin-left: auto; width: 40%; margin-top: 20px; }
+        .summary p { display: flex; justify-content: space-between; padding: 8px; }
+        .summary .grand-total { background: #3498db; color: white; font-size: 1.3em; padding: 15px; border-radius: 5px; }
+        footer { text-align: center; margin-top: 40px; }
+    </style>
+</head>
+<body>
+    <div class="invoice-wrapper">
+        <header>
+            <h1>{{ business.name }}</h1>
+            <div class="text-right">
+                <strong>Invoice</strong><br>
+                #{{ invoice.invoice_no }}<br>
+                Issued: {{ invoice.date }}
+            </div>
+        </header>
+        <section class="meta-info">
+            <div>
+                <strong>Billed To:</strong><br>
+                {{ customer.name }}<br>
+                {{ customer.address }}
+            </div>
+        </section>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>Item</th>
+                    <th class="text-right">Qty</th>
+                    <th class="text-right">Price</th>
+                    <th class="text-right">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ item.name }}</td>
+                    <td class="text-right">{{ item.quantity }}</td>
+                    <td class="text-right">₹{{ "%.2f"|format(item.price_per_unit) }}</td>
+                    <td class="text-right">₹{{ "%.2f"|format(item.total_amount) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <section class="summary">
+            <p><span>Subtotal:</span> <span>₹{{ "%.2f"|format(invoice.taxable_value) }}</span></p>
+            <p><span>Tax:</span> <span>₹{{ "%.2f"|format(invoice.cgst + invoice.sgst) }}</span></p>
+            <p><span>Round Off:</span> <span>₹{{ "%.2f"|format(invoice.round_off) }}</span></p>
+            <p class="grand-total"><strong>Total:</strong> <strong>₹{{ "%.2f"|format(invoice.total_value) }}</strong></p>
+        </section>
+        <footer>
+            <p>Thank you!</p>
+        </footer>
+    </div>
+</body>
+</html>

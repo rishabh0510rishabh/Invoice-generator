@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Invoice Generator Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+</head>
+<body class="pre-init">
+  <div class="app-container">
+    <div class="sidebar">
+      <div class="tab-box">
+        <button class="collapse-btn">&lt;</button>
+
+        <div class="tab-container">
+          <button class="tab-btn" data-tab="home">
+            Home <span class="icon">🏠</span>
+          </button>
+        </div>
+
+        <div class="tab-container">
+          <button class="tab-btn" data-tab="sale">
+            Sale <span class="icon">🛒</span>
+          </button>
+          <div class="sub-menu">
+            <button class="sub-menu-btn" data-sub-tab="add-sale">Add Sale</button>
+            <button class="sub-menu-btn" data-sub-tab="sale-return">Sale Return</button>
+          </div>
+        </div>
+
+        <div class="tab-container">
+          <button class="tab-btn" data-tab="customer">
+            Customer <span class="icon">👤</span>
+          </button>
+        </div>
+
+        <div class="tab-container">
+          <button class="tab-btn" data-tab="items">
+            Items <span class="icon">📦</span>
+          </button>
+        </div>
+
+        <div class="tab-container">
+          <button class="tab-btn" data-tab="backup">
+            Backup <span class="icon">☁️</span>
+          </button>
+        </div>
+
+        <div class="tab-container">
+          <button class="tab-btn" data-tab="utilities">
+            Utilities <span class="icon">🧰</span>
+          </button>
+        </div>
+
+        <div class="tab-container">
+          <button class="tab-btn" data-tab="settings">
+            Settings <span class="icon">⚙️</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="confirmation-modal" class="modal-container">
+      <div class="modal-content" style="max-width: 400px;">
+        <div class="modal-header">
+            <h3 id="modal-title">Confirm Action</h3>
+            <button class="close-btn" id="close-modal-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="modal-message">Are you sure?</p>
+        </div>
+        <div class="modal-footer" style="justify-content: flex-end;">
+         <button id="modal-cancel-btn" class="action-button secondary">Cancel</button>
+         <button id="modal-confirm-btn" class="action-button danger">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="customer-modal" class="modal-container" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="customer-modal-title">Add New Customer</h3>
+                <button class="close-btn" id="close-customer-modal-main">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="customer-form" onsubmit="return false;">
+                    <input type="hidden" id="customer-id-input">
+                    <div class="form-group">
+                        <label for="customer-name-main">Customer Name *</label>
+                        <input type="text" id="customer-name-main" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customer-address-main">Address *</label>
+                        <textarea id="customer-address-main" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="customer-phone-main">Phone No.</label>
+                        <input type="text" id="customer-phone-main">
+                    </div>
+                    <div class="form-group">
+                        <label for="customer-gstin-main">GSTIN</label>
+                        <input type="text" id="customer-gstin-main">
+                    </div>
+                    <div class="form-group">
+                        <label for="customer-pos-main">Place of Supply *</label>
+                        <select id="customer-pos-main" required></select>
+                    </div>
+                    <div id="customer-form-error-main" class="error-message" style="display: none;"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+               <button type="button" id="cancel-customer-btn-main" class="action-button secondary">Cancel</button>
+               <button type="button" id="save-customer-btn-main" class="action-button">Save Customer</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- NEW: Item Add/Edit Modal -->
+    <div id="item-modal" class="modal-container" style="display: none;">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h3 id="item-modal-title">Add New Item</h3>
+              <button class="close-btn" id="close-item-modal-main">&times;</button>
+          </div>
+          <div class="modal-body">
+              <form id="item-form" onsubmit="return false;">
+                  <input type="hidden" id="item-id-input">
+                  <div class="form-group">
+                      <label for="item-name-main">Item Name *</label>
+                      <input type="text" id="item-name-main" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="item-hsn-main">HSN Code</label>
+                      <input type="text" id="item-hsn-main">
+                  </div>
+                  <div class="form-group">
+                      <label for="item-unit-main">Default Unit *</label>
+                      <select id="item-unit-main" required></select>
+                  </div>
+                  <div class="form-group">
+                      <label for="item-mrp-main">Default MRP *</label>
+                      <input type="number" id="item-mrp-main" min="0" step="0.01" required>
+                  </div>
+                   <div class="form-group">
+                      <label for="item-purchase-price-main">Purchase Price</label>
+                      <input type="number" id="item-purchase-price-main" min="0" step="0.01">
+                  </div>
+                   <div class="form-group">
+                      <label for="item-price-main">Default Sale Price *</label>
+                      <input type="number" id="item-price-main" min="0" step="0.01" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="item-tax-main">Default GST Rate *</label>
+                      <select id="item-tax-main" required></select>
+                  </div>
+                  <div class="form-group price-mode-toggle" style="justify-content: flex-start;">
+                      <label class="switch">
+                          <input type="checkbox" id="item-inclusive-main" checked>
+                          <span class="slider round"></span>
+                      </label>
+                      <span>Price is Inclusive of Tax</span>
+                  </div>
+                  <div id="item-form-error-main" class="error-message" style="display: none;"></div>
+              </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" id="cancel-item-btn-main" class="action-button secondary">Cancel</button>
+            <button type="button" id="save-item-btn-main" class="action-button">Save Item</button>
+          </div>
+      </div>
+    </div>
+
+
+    <div class="content-area">
+      <div class="tile-grid">
+        <section id="home" class="tile">
+          <div class="dashboard-header">
+            <button id="add-sale-btn-home" class="action-button">+ Add Sale</button>
+          </div>
+          <div class="fy-summary-card">
+            <h4>Financial Year At a Glance (YTD)</h4>
+            <div class="fy-summary-metrics">
+              <div class="fy-metric">
+                <span>Total Sales</span>
+                <p>₹ <span id="fy-total-sales">0.00</span></p>
+              </div>
+              <div class="fy-metric">
+                <span>Total Profit (Est.)</span>
+                <p>₹ <span id="fy-total-profit">0.00</span></p>
+              </div>
+            </div>
+          </div>
+
+          <div class="kpi-cards-grid">
+            <div class="kpi-card">
+              <h4>Total Sales</h4>
+              <p>₹ <span id="kpi-total-sales">0</span></p>
+            </div>
+            <div class="kpi-card">
+              <h4>Total Invoices</h4>
+              <p><span id="kpi-total-invoices">0</span></p>
+            </div>
+            <div class="kpi-card">
+              <h4>Profit (Est.)</h4>
+              <p>₹ <span id="kpi-total-profit">0</span></p>
+            </div>
+          </div>
+
+          <div class="dashboard-main-content">
+            <div class="main-sale-chart">
+              <div class="dashboard-top">
+                <div class="sale-info">
+                  <h3>Sales Overview</h3>
+                  <p><span id="sales-change">+0%</span> vs previous period</p>
+                </div>
+                <div class="filter-controls">
+                  <div class="filter">
+                    <select id="timeframe-select">
+                      <option value="this-month">This Month</option>
+                      <option value="last-month">Last Month</option>
+                      <option value="this-quarter">This Quarter</option>
+                      <option value="this-year">This Year</option>
+                      <option value="custom">Custom Range</option>
+                    </select>
+                  </div>
+                  <div class="custom-date-range" id="custom-date-range-picker" style="display: none;">
+                    <input type="date" id="custom-start-date">
+                    <span>to</span>
+                    <input type="date" id="custom-end-date">
+                  </div>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="sales-chart"></canvas>
+              </div>
+            </div>
+
+            <div class="recent-invoices">
+              <h3>Recent Invoices</h3>
+              <ul id="recent-invoices-list"></ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="sale" class="tile">
+          <div class="sale-header">
+            <div class="sale-header-main">
+              <h2>Sale Invoices</h2>
+              <div class="sale-total-summary">
+                <span>Total Sales (Filtered):</span>
+                <span id="filtered-sales-total">₹0.00</span>
+              </div>
+            </div>
+            <div class="sale-actions">
+              <div class="filters">
+                  <div class="filter-item">
+                      <label for="invoice-search" class="filter-label">Search</label>
+                      <input type="text" id="invoice-search" placeholder="Search by Invoice # or Customer">
+                  </div>
+                  <div class="filter-item">
+                      <label for="date-range-filter" class="filter-label">Date</label>
+                      <select id="date-range-filter">
+                          <option value="all" selected>All Time</option>
+                          <option value="this_month">This Month</option>
+                          <option value="last_month">Last Month</option>
+                          <option value="this_quarter">This Quarter</option>
+                          <option value="last_quarter">Last Quarter</option>
+                          <option value="custom">Custom Range</option>
+                      </select>
+                  </div>
+                  <div class="filter-item" id="custom-date-container" style="display: none;">
+                      <div class="custom-date-inputs">
+                          <div class="date-input-group">
+                              <label for="start-date" class="filter-label">From</label>
+                              <input type="date" id="start-date">
+                          </div>
+                          <div class="date-input-group">
+                              <label for="end-date" class="filter-label">To</label>
+                              <input type="date" id="end-date">
+                          </div>
+                      </div>
+                  </div>
+                  <div class="filter-item">
+                      <label for="sort-by-select" class="filter-label">Sort By</label>
+                      <select id="sort-by-select">
+                          <option value="date_desc">Date (Newest)</option>
+                          <option value="date_asc">Date (Oldest)</option>
+                          <option value="invoice_no_desc" selected>Invoice No (Highest)</option>
+                          <option value="invoice_no_asc">Invoice No (Lowest)</option>
+                          <option value="total_value_desc">Value (High-Low)</option>
+                          <option value="total_value_asc">Value (Low-High)</option>
+                      </select>
+                  </div>
+                  <div class="filter-item">
+                      <label class="filter-label">&nbsp;</label> <button id="print-report-btn" class="action-button">Print Report</button>
+                  </div>
+              </div>
+           </div>
+          </div>
+          <div class="data-table-container">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th data-sort="invoice_no">Invoice No <span class="sort-arrow"></span></th>
+                  <th data-sort="customer_name">Customer Name <span class="sort-arrow"></span></th>
+                  <th data-sort="date">Date <span class="sort-arrow">▼</span></th>
+                  <th data-sort="total_value">Total Value <span class="sort-arrow"></span></th>
+                  <th data-sort="status">Status <span class="sort-arrow"></span></th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="invoice-list-body"></tbody>
+            </table>
+          </div>
+        </section>
+        
+        <section id="customer" class="tile">
+            <div class="sale-header">
+                <div class="sale-header-main">
+                    <h2>Customers</h2>
+                    <button id="add-new-customer-btn" class="action-button">+ Add New Customer</button>
+                </div>
+                <div class="sale-actions">
+                    <div class="search-container" style="width: 100%;">
+                        <input type="text" id="customer-search-main" placeholder="Search by Name, Phone, or GSTIN..." style="width: 100%;">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                </div>
+            </div>
+            <div class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Phone</th>
+                            <th>GSTIN</th>
+                            <th>Place of Supply</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customer-list-body"></tbody>
+                </table>
+            </div>
+            <div class="pagination-footer" style="padding-top: 15px; display: flex; justify-content: flex-end; align-items: center;"></div>
+        </section>
+
+        <!-- NEW: Item Management Tile -->
+        <section id="items" class="tile">
+            <div class="sale-header">
+                <div class="sale-header-main">
+                    <h2>Items</h2>
+                    <button id="add-new-item-btn" class="action-button">+ Add New Item</button>
+                </div>
+                <div class="sale-actions">
+                    <div class="search-container" style="width: 100%;">
+                        <input type="text" id="item-search-main" placeholder="Search by Name or HSN Code..." style="width: 100%;">
+                        <span class="search-icon">🔍</span>
+                    </div>
+                </div>
+            </div>
+            <div class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>HSN</th>
+                            <th>Sale Price</th>
+                            <th>Tax Rate</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="item-list-body">
+                        <!-- Item data will be populated here by JS -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="pagination-footer" style="padding-top: 15px; display: flex; justify-content: flex-end; align-items: center;"></div>
+        </section>
+
+        <!-- NEW: Backup Tile -->
+        <section id="backup" class="tile">
+            <h2>Backup & Restore</h2>
+            <div class="setting-group">
+                <h3>Backup</h3>
+                <p class="setting-description">Download a copy of the entire application database. Keep this file in a safe place.</p>
+                <button id="backup-db-btn" class="action-button">Download Database Backup</button>
+            </div>
+            <div class="setting-group">
+                <h3>Restore</h3>
+                <p class="setting-description">Restore the application data from a backup file. <strong>Warning:</strong> This will overwrite all current data.</p>
+                <input type="file" id="restore-db-input" accept=".db" style="display: none;">
+                <button id="restore-db-btn" class="action-button secondary">Choose Backup File</button>
+                <span id="restore-file-name" style="margin-left: 15px;">No file selected.</span>
+            </div>
+        </section>
+
+        <section id="settings" class="tile">
+          <h2>Settings</h2>
+          <div class="setting-group">
+            <h3>Appearance</h3>
+            <div class="theme-switch-wrapper">
+              <label class="theme-switch" for="theme-toggle">
+                <input type="checkbox" id="theme-toggle" />
+                <span class="slider round"></span>
+              </label>
+              <span class="theme-label">Dark Mode</span>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <h3>Invoice Defaults</h3>
+            <div class="theme-switch-wrapper" style="margin-top: 15px;">
+              <label class="theme-switch" for="default-price-mode-toggle">
+                <input type="checkbox" id="default-price-mode-toggle" />
+                <span class="slider round"></span>
+              </label>
+              <span class="theme-label">Default new invoices to 'Price With Tax'</span>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <h3>PDF Theme</h3>
+            <p class="setting-description">Select the default theme for generated PDF invoices.</p>
+            <div id="pdf-theme-selector" class="theme-selector-container">
+              <div class="theme-option">
+                <img src="https://placehold.co/200x283/FFFFFF/000000?text=Default" alt="Default Theme Preview" class="theme-preview">
+                <label><input type="radio" name="pdf_theme" value="default" checked> Default</label>
+              </div>
+              <div class="theme-option">
+                <img src="https://placehold.co/200x283/007BFF/FFFFFF?text=Modern" alt="Modern Theme Preview" class="theme-preview">
+                <label><input type="radio" name="pdf_theme" value="modern"> Modern</label>
+              </div>
+              <div class="theme-option">
+                <img src="https://placehold.co/200x283/F8F9FA/343A40?text=Minimalist" alt="Minimalist Theme Preview" class="theme-preview">
+                <label><input type="radio" name="pdf_theme" value="minimalist"> Minimalist</label>
+              </div>
+              <div class="theme-option">
+                <img src="https://placehold.co/200x283/EEEEEE/000000?text=Classic" alt="Classic Theme Preview" class="theme-preview">
+                <label><input type="radio" name="pdf_theme" value="classic"> Classic</label>
+              </div>
+              <div class="theme-option">
+                <img src="https://placehold.co/200x283/3498DB/FFFFFF?text=Creative" alt="Creative Theme Preview" class="theme-preview">
+                <label><input type="radio" name="pdf_theme" value="creative"> Creative</label>
+              </div>
+              <div class="theme-option">
+                <img src="https://placehold.co/200x283/212529/FFFFFF?text=Technical" alt="Technical Theme Preview" class="theme-preview">
+                <label><input type="radio" name="pdf_theme" value="technical"> Technical</label>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+  <div id="notification" class="notification"></div>
+  <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice - {{ invoice.invoice_no }}</title>
+    <style>
+        /* Basic styles for the PDF invoice */
+        @page {
+            size: A4;
+            margin: 1.5cm;
+        }
+
+        body {
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            font-size: 10pt;
+            color: #333;
+        }
+
+        h1 {
+            font-size: 24pt;
+            color: #000;
+            margin: 0;
+        }
+
+        h2 {
+            font-size: 16pt;
+            color: #000;
+            text-align: right;
+            border-bottom: 2px solid #000;
+            padding-bottom: 5px;
+            margin: 0;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+
+        .business-details p {
+            margin: 2px 0;
+            font-size: 9pt;
+        }
+
+        .meta-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .bill-to, .invoice-details {
+            width: 48%;
+        }
+
+        .bill-to p, .invoice-details p {
+            margin: 4px 0;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .items-table th, .items-table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .items-table thead {
+            background-color: #f2f2f2;
+        }
+
+        .items-table th {
+            font-weight: bold;
+        }
+        
+        /* Column Widths */
+        .items-table th:nth-child(1), .items-table td:nth-child(1) { width: 5%; } /* # */
+        .items-table th:nth-child(2), .items-table td:nth-child(2) { width: 35%; } /* Item Name */
+        .items-table th:nth-child(3), .items-table td:nth-child(3) { width: 10%; } /* HSN */
+        .items-table th:nth-child(4), .items-table td:nth-child(4) { width: 8%; } /* Qty */
+        .items-table th:nth-child(5), .items-table td:nth-child(5) { width: 8%; } /* Unit */
+        .items-table th:nth-child(6), .items-table td:nth-child(6) { width: 12%; } /* Price */
+        .items-table th:nth-child(7), .items-table td:nth-child(7) { width: 12%; } /* GST */
+        .items-table th:nth-child(8), .items-table td:nth-child(8) { width: 10%; } /* Amount */
+
+
+        .items-table .text-right {
+            text-align: right;
+        }
+
+        .summary {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-top: 20px;
+        }
+
+        .amount-in-words {
+            width: 60%;
+        }
+
+        .totals {
+            width: 35%;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .totals p {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+        }
+
+        .totals .grand-total {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-size: 9pt;
+            border-top: 1px solid #ccc;
+            padding-top: 10px;
+        }
+
+        .signature {
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="business-details">
+            <h1>{{ business.name }}</h1>
+            <p>{{ business.address }}</p>
+            <p>Email: {{ business.email }} | Contact: {{ business.contact_number }}</p>
+            <p>GSTIN: {{ business.gstin }}</p>
+        </div>
+        <h2>Tax Invoice</h2>
+    </header>
+
+    <main>
+        <section class="meta-info">
+            <div class="bill-to">
+                <strong>Bill To:</strong>
+                <p>{{ customer.name }}</p>
+                <p>{{ customer.address }}</p>
+                <p>Contact No.: {{ customer.phone }}</p>
+                {% if customer.gstin %}
+                    <p>GSTIN: {{ customer.gstin }}</p>
+                {% endif %}
+            </div>
+            <div class="invoice-details">
+                <p><strong>Invoice No.:</strong> {{ invoice.invoice_no }}</p>
+                <p><strong>Date:</strong> {{ invoice.date }}</p>
+                <p><strong>Place of Supply:</strong> {{ customer.place_of_supply }}</p>
+            </div>
+        </section>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Item Name</th>
+                    <th>HSN/SAC</th>
+                    <th>Quantity</th>
+                    <th>Unit</th>
+                    <th>Price/Unit</th>
+                    <th>GST</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.hsn_code }}</td>
+                    <td class="text-right">{{ item.quantity }}</td>
+                    <td>{{ item.unit }}</td>
+                    <td class="text-right">₹{{ "%.2f"|format(item.price_per_unit) }}</td>
+                    <td class="text-right">₹{{ "%.2f"|format(item.cgst_amount + item.sgst_amount) }} ({{ item.gst_rate }}%)</td>
+                    <td class="text-right">₹{{ "%.2f"|format(item.total_amount) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" class="text-right"><strong>Total</strong></td>
+                    <td class="text-right"><strong>{{ total_quantity }}</strong></td>
+                    <td colspan="2"></td>
+                    <td class="text-right"><strong>₹{{ "%.2f"|format(invoice.cgst + invoice.sgst) }}</strong></td>
+                    <td class="text-right"><strong>₹{{ "%.2f"|format(invoice.total_value) }}</strong></td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <section class="summary">
+            <div class="amount-in-words">
+                <strong>Invoice Amount In Words</strong>
+                <p>{{ amount_in_words }}</p>
+            </div>
+            <div class="totals">
+                <p><strong>Sub Total:</strong> <span>₹{{ "%.2f"|format(invoice.taxable_value) }}</span></p>
+                {% for rate, amounts in tax_summary.items() %}
+                    <p><strong>CGST @ {{ rate / 2 }}%:</strong> <span>₹{{ "%.2f"|format(amounts.cgst) }}</span></p>
+                    <p><strong>SGST @ {{ rate / 2 }}%:</strong> <span>₹{{ "%.2f"|format(amounts.sgst) }}</span></p>
+                {% endfor %}
+                <hr>
+                <p class="grand-total"><strong>Total:</strong> <span>₹{{ "%.2f"|format(invoice.total_value) }}</span></p>
+                <p><strong>Received:</strong> <span>₹0.00</span></p>
+                <p><strong>Balance:</strong> <span>₹{{ "%.2f"|format(invoice.total_value) }}</span></p>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="terms">
+            <strong>Terms And Conditions</strong>
+            <p>Thanks for doing business with us!</p>
+        </div>
+        <div class="signature">
+            <p>For: {{ business.name }}</p>
+            <br><br>
+            <p>Authorized Signatory</p>
+        </div>
+    </footer>
+</body>
+</html>

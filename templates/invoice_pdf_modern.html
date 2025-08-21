@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice</title>
+    <style>
+        @page { size: A4; margin: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; margin: 0; font-size: 10pt; background: #f8f9fa; color: #343a40; }
+        .invoice-box { max-width: 800px; margin: auto; padding: 30px; background: #fff; }
+        header { background: #007bff; color: #fff; padding: 40px 30px; text-align: center; }
+        header h1 { margin: 0; font-size: 2.5em; }
+        .meta-info { display: flex; justify-content: space-between; margin: 30px 0; }
+        .bill-to, .invoice-details { width: 48%; }
+        .bill-to strong, .invoice-details strong { display: block; margin-bottom: 5px; color: #007bff; }
+        .items-table { width: 100%; border-collapse: collapse; }
+        .items-table th, .items-table td { padding: 12px; border-bottom: 1px solid #dee2e6; }
+        .items-table thead th { background-color: #e9ecef; text-align: left; font-weight: 600; color: #495057; }
+        .items-table .text-right { text-align: right; }
+        .summary { display: flex; justify-content: flex-end; margin-top: 20px; }
+        .totals { width: 40%; }
+        .totals p { display: flex; justify-content: space-between; margin: 8px 0; }
+        .totals .grand-total { font-size: 1.2em; font-weight: bold; border-top: 2px solid #007bff; padding-top: 10px; }
+        footer { text-align: center; margin-top: 40px; font-size: 0.8em; color: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="invoice-box">
+        <header>
+            <h1>INVOICE</h1>
+            <p>{{ business.name }}</p>
+        </header>
+        <main>
+            <section class="meta-info">
+                <div class="bill-to">
+                    <strong>Bill To:</strong>
+                    <p>{{ customer.name }}<br>{{ customer.address }}<br>{{ customer.phone }}</p>
+                </div>
+                <div class="invoice-details">
+                    <strong>Invoice #:</strong> {{ invoice.invoice_no }}<br>
+                    <strong>Date:</strong> {{ invoice.date }}<br>
+                    <strong>Place of Supply:</strong> {{ customer.place_of_supply }}
+                </div>
+            </section>
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th class="text-right">Quantity</th>
+                        <th class="text-right">Price</th>
+                        <th class="text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td>{{ item.name }}</td>
+                        <td class="text-right">{{ item.quantity }}</td>
+                        <td class="text-right">₹{{ "%.2f"|format(item.price_per_unit) }}</td>
+                        <td class="text-right">₹{{ "%.2f"|format(item.total_amount) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <section class="summary">
+                <div class="totals">
+                    <p>Subtotal: <span>₹{{ "%.2f"|format(invoice.taxable_value) }}</span></p>
+                    <p>Taxes (CGST+SGST): <span>₹{{ "%.2f"|format(invoice.cgst + invoice.sgst) }}</span></p>
+                    <p>Round Off: <span>₹{{ "%.2f"|format(invoice.round_off) }}</span></p>
+                    <p class="grand-total">Total: <span>₹{{ "%.2f"|format(invoice.total_value) }}</span></p>
+                </div>
+            </section>
+        </main>
+        <footer>
+            <p>Thank you for your business!</p>
+        </footer>
+    </div>
+</body>
+</html>

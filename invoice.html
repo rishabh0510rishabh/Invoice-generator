@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Invoice</title>
+  <link rel="stylesheet" href="invoice.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+</head>
+<body>
+  <div class="invoice-container">
+      <div class="invoice-header">
+        <h2>Sale</h2>
+      </div>
+      <div class="invoice-meta">
+        <div class="customer-details">
+            <div class="search-wrapper">
+              <input type="text" id="customer-search" name="customer_search" placeholder="Search by Name/Phone *" autocomplete="off" />
+              <div id="customer-results" class="search-results-list"></div>
+            </div>
+            <div id="customer-address-display" class="address-display"></div>
+        </div>
+        <div class="meta-right">
+          <label>Invoice Number:</label>
+          <div class="invoice-number-group">
+              <select id="invoice-prefix-select" name="invoice_prefix"></select>
+              <input type="text" id="invoice-number-suffix" name="invoice_suffix" />
+          </div>
+          <label>Invoice Date: <input type="date" id="invoice-date" name="invoice_date" /></label>
+        </div>
+      </div>
+      <table class="invoice-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th style="width: 30%;">Item</th>
+            <th>HSN</th>
+            <th>MRP</th>
+            <th>Qty</th>
+            <th>Free Qty</th>
+            <th>Unit</th>
+            <th>Price/Unit</th>
+            <th>Disc %</th>
+            <th>Disc Amt</th>
+            <th>Tax</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody id="invoice-body"></tbody>
+      </table>
+      <div class="table-controls">
+          <button id="add-row-btn" class="add-row-btn">+ Add Row</button>
+          <div class="price-mode-toggle">
+              <span>Price</span>
+              <label class="switch">
+                  <input type="checkbox" id="price-mode-checkbox" name="price_mode" checked>
+                  <span class="slider round"></span>
+              </label>
+              <span>With Tax</span>
+          </div>
+      </div>
+      <div class="invoice-footer">
+        <div class="footer-left">
+            <label>Add Description:</label>
+            <textarea placeholder="Description..." name="description"></textarea>
+        </div>
+        <div class="footer-right">
+            <div class="totals-grid">
+                <span>Sub-Total</span><span id="sub-total">₹0.00</span>
+    
+               <span>Discount</span>
+
+               <div class="final-discount-table">
+                  <div class="final-discount-headers">
+                      <div>%</div>
+                      <div>Amount</div>
+                  </div>
+                  <div class="final-discount-inputs">
+                      <input type="number" id="final-discount-percent" min="0" max="100">
+                      <input type="number" id="final-discount-amount" min="0">
+                  </div>
+              </div>
+              <span>Taxable Amount</span><span id="taxable-total">₹0.00</span>
+              <div id="tax-summary" class="tax-summary"></div>
+              <span>Round Off</span><span id="round-off">₹0.00</span>
+              <span class="grand-total-label">Grand Total</span>
+              <span id="grand-total" class="grand-total-value">₹0.00</span>
+            </div>
+            <div class="invoice-actions">
+              <button type="button" name="print">Print</button>
+              <button type="button" class="save" name="save">Save</button>
+            </div>
+        </div>
+      </div>
+  </div>
+
+  <div id="add-customer-modal" class="modal-container" style="display: none;">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h3>Add New Customer</h3>
+              <button class="close-btn" id="close-customer-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+              <form id="add-customer-form" onsubmit="return false;">
+                  <div class="form-group">
+                      <label for="new-customer-name">Customer Name *</label>
+                      <input type="text" id="new-customer-name" name="new_customer_name" required>
+                  </div>
+                  <div class="form-group">
+                      <label for="new-customer-address">Address *</label>
+                      <textarea id="new-customer-address" name="new_customer_address" rows="3" required></textarea>
+                  </div>
+                  <div class="form-group">
+                      <label for="new-customer-phone">Phone No.</label>
+                      <input type="text" id="new-customer-phone" name="new_customer_phone">
+                  </div>
+                  <div class="form-group">
+                      <label for="new-customer-gstin">GSTIN</label>
+                      <input type="text" id="new-customer-gstin" name="new_customer_gstin">
+                  </div>
+                  <div class="form-group">
+                      <label for="new-customer-pos">Place of Supply *</label>
+                      <select id="new-customer-pos" name="new_customer_pos" required></select>
+                  </div>
+                  <div id="customer-form-error-message" class="error-message" style="display: none;"></div>
+              </form>
+          </div>
+          <div class="modal-footer">
+             <button type="button" id="cancel-customer-btn" name="cancel_customer">Cancel</button>
+             <button type="button" id="save-customer-btn" name="save_customer">Save Customer</button>
+          </div>
+      </div>
+  </div>
+
+  <div id="add-item-modal" class="modal-container" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Add New Item</h3>
+            <button class="close-btn" id="close-item-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="add-item-form" onsubmit="return false;">
+                <div class="form-group">
+                    <label for="new-item-name">Item Name *</label>
+                    <input type="text" id="new-item-name" name="new_item_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="new-item-hsn">HSN Code</label>
+                    <input type="text" id="new-item-hsn" name="new_item_hsn">
+                </div>
+                <div class="form-group">
+                    <label for="new-item-unit">Default Unit *</label>
+                    <select id="new-item-unit" name="new_item_unit" required></select>
+                </div>
+                <div class="form-group">
+                    <label for="new-item-mrp">Default MRP *</label>
+                    <input type="number" id="new-item-mrp" name="new_item_mrp" min="0" step="0.01" required>
+                </div>
+                 <div class="form-group">
+                    <label for="new-item-purchase-price">Purchase Price</label>
+                    <input type="number" id="new-item-purchase-price" name="new_item_purchase_price" min="0" step="0.01">
+                </div>
+                 <div class="form-group">
+                    <label for="new-item-price">Default Sale Price *</label>
+                    <input type="number" id="new-item-price" name="new_item_price" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="new-item-tax">Default GST Rate *</label>
+                    <select id="new-item-tax" name="new_item_tax" required></select>
+                </div>
+                <div class="form-group price-mode-toggle" style="justify-content: flex-start;">
+                    <label class="switch">
+                        <input type="checkbox" id="new-item-inclusive" name="new_item_inclusive" checked>
+                        <span class="slider round"></span>
+                    </label>
+                    <span>Price is Inclusive of Tax</span>
+                </div>
+                <div id="item-form-error-message" class="error-message" style="display: none;"></div>
+            </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="cancel-item-btn" name="cancel_item">Cancel</button>
+          <button type="button" id="save-item-btn" name="save_item">Save Item</button>
+        </div>
+    </div>
+</div>
+<div id="save-confirmation-modal" class="modal-container" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="save-modal-title">Confirm Action</h3>
+            <button class="close-btn" id="close-save-modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p id="save-modal-message">Are you sure you want to save this invoice?</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" id="cancel-save-btn" class="action-button secondary">Cancel</button>
+          <button type="button" id="confirm-save-btn" class="action-button save">Confirm & Save</button>
+        </div>
+    </div>
+</div>
+<div id="notification" class="notification"></div>
+
+  <script src="invoice.js"></script>
+
+</body>
+</html>

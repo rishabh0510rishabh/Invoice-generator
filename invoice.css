@@ -1,0 +1,247 @@
+/* --- THEME VARIABLES --- */
+body.light { --bg-color: #f0f2f5; --text-color: #333; --container-bg: #ffffff; --header-border: #e9ecef; --table-border: #dee2e6; --table-head-bg: #f8f9fa; --input-bg: #fff; --input-border: #ced4da; --button-text: #fff; --primary-color: #007bff; --primary-hover: #0056b3; --search-result-hover-bg: #e9ecef; --address-color: #6c757d; --modal-bg: rgba(0,0,0,0.5); }
+body.dark { --bg-color: #1a1a1a; --text-color: #e0e0e0; --container-bg: #2c2c2c; --header-border: #444; --table-border: #555; --table-head-bg: #383838; --input-bg: #333; --input-border: #666; --button-text: #fff; --primary-color: #0d6efd; --primary-hover: #0a58ca; --search-result-hover-bg: #4a4a4a; --address-color: #adb5bd; --modal-bg: rgba(0,0,0,0.7); }
+
+/* --- Base & Layout --- */
+body { font-family: 'Roboto', sans-serif; margin: 0; padding: 20px; background: var(--bg-color); color: var(--text-color); transition: background-color 0.3s, color 0.3s; }
+.invoice-container { max-width: 95%; margin: 20px auto; background: var(--container-bg); padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid var(--header-border); transition: filter 0.3s ease-in-out; }
+
+/* NEW: Style for blurring the background */
+.invoice-container.blurred {
+    filter: blur(4px) brightness(0.9);
+}
+    /* pointer-events: none;
+    user-select: none;
+
+/* --- Invoice Form Styles --- */
+.invoice-header { padding-bottom: 20px; border-bottom: 2px solid var(--header-border); margin-bottom: 25px; }
+.invoice-header h2 { font-size: 28px; color: var(--primary-color); margin: 0; }
+.invoice-meta { display: flex; justify-content: space-between; gap: 15px; align-items: flex-start; }
+.customer-details { display: flex; flex-direction: column; gap: 8px; }
+.address-display { font-size: 0.9em; color: var(--address-color); max-width: 250px; line-height: 1.4; }
+.invoice-meta input, .invoice-meta select, textarea { padding: 10px; border: 1px solid var(--input-border); background-color: var(--input-bg); color: var(--text-color); border-radius: 6px; transition: border-color 0.3s, box-shadow 0.3s; }
+.invoice-meta input:focus, .invoice-meta select:focus { border-color: #80bdff; box-shadow: 0 0 5px rgba(0, 123, 255, 0.25); outline: none; }
+.meta-right { display: flex; flex-direction: column; gap: 10px; text-align: right; }
+.invoice-number-group { display: flex; align-items: center; }
+.invoice-number-group select { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: none; }
+.invoice-number-group input { border-top-left-radius: 0; border-bottom-left-radius: 0; width: 100px; }
+.invoice-table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
+.invoice-table th, .invoice-table td { border: 1px solid var(--table-border); padding: 8px; text-align: center; vertical-align: top; }
+.invoice-table thead { background-color: var(--table-head-bg); }
+.invoice-table th { font-weight: 600; padding: 12px 8px; }
+.invoice-table input, .invoice-table select { width: 100%; padding: 8px; border: 1px solid var(--input-border); background-color: var(--input-bg); color: var(--text-color); border-radius: 4px; box-sizing: border-box; }
+.invoice-footer { display: flex; justify-content: space-between; margin-top: 20px; align-items: flex-start; }
+.footer-left { flex: 1; }
+.footer-right { flex: 1; max-width: 400px; display: flex; flex-direction: column; gap: 15px; }
+.totals-grid { display: grid; grid-template-columns: 1fr auto; gap: 10px 20px; align-items: center; font-size: 0.95em; }
+.totals-grid span { text-align: right; }
+.tax-summary { grid-column: 1 / -1; display: contents; }
+.tax-summary-item { display: contents; }
+.grand-total-label, .grand-total-value { font-weight: bold; font-size: 1.2em; color: var(--primary-color); padding-top: 10px; border-top: 2px solid var(--header-border); }
+.add-row-btn, .invoice-actions button { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; color: var(--button-text); transition: background-color 0.3s, transform 0.2s; }
+.add-row-btn { background-color: var(--primary-color); }
+.add-row-btn:hover { background-color: var(--primary-hover); transform: translateY(-2px); }
+.invoice-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px; }
+.invoice-actions button { background-color: #28a745; }
+.invoice-actions .save { background-color: var(--primary-color); }
+.invoice-actions button:hover { opacity: 0.9; transform: translateY(-2px); }
+.search-wrapper { position: relative; width: 100%; }
+.search-results-list { display: none; position: absolute; top: 100%; left: 0; right: 0; background-color: var(--container-bg); border: 1px solid var(--input-border); border-top: none; border-radius: 0 0 6px 6px; z-index: 1000; max-height: 250px; overflow-y: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+.search-results-list.show { display: block; }
+.result-item, .add-party-btn { padding: 10px 12px; cursor: pointer; border-bottom: 1px solid var(--header-border); }
+.result-item:last-child { border-bottom: none; }
+.result-item:hover { background-color: var(--search-result-hover-bg); }
+.add-party-btn { color: var(--primary-color); font-weight: 500; }
+.add-party-btn:hover { background-color: var(--search-result-hover-bg); }
+.result-item-name { font-weight: 500; }
+.result-item-details { font-size: 0.85em; color: #888; }
+.discount-input-wrapper { display: flex; align-items: center; border: 1px solid var(--input-border); border-radius: 6px; background-color: var(--input-bg); overflow: hidden; width: 150px; justify-self: end; }
+.discount-input-wrapper input { border: none; outline: none; padding: 8px; width: 100%; background-color: transparent; color: var(--text-color); }
+.discount-type-toggle { padding: 8px; background-color: var(--search-result-hover-bg); cursor: pointer; font-weight: 500; border-left: 1px solid var(--input-border); user-select: none; }
+.table-controls { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+.price-mode-toggle { display: flex; align-items: center; gap: 8px; font-size: 0.9em; }
+.switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; }
+.slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; }
+input:checked + .slider { background-color: #28a745; }
+input:checked + .slider:before { transform: translateX(20px); }
+.slider.round { border-radius: 24px; }
+.slider.round:before { border-radius: 50%; }
+.invoice-table .unit-select, .invoice-table .tax-select { min-width: 80px; }
+
+/* --- Modal Styles --- */
+.modal-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--modal-bg); display: flex; justify-content: center; align-items: center; z-index: 1001; animation: fadeIn 0.3s ease; }
+.modal-content { background-color: var(--container-bg); border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); width: 90%; max-width: 500px; animation: slide-down 0.3s ease-out; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 15px 20px; border-bottom: 1px solid var(--header-border); }
+.close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: var(--text-color); }
+.modal-body { padding: 20px; }
+.form-group { margin-bottom: 15px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: 500; font-size: 0.9em; }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid var(--input-border); background-color: var(--input-bg); color: var(--text-color); border-radius: 6px; box-sizing: border-box; }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus { border-color: var(--primary-color); outline: none; }
+.error-message { color: #dc3545; font-size: 0.9em; margin-top: 10px; }
+/* Add or modify these styles in invoice.css */
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end; /* Aligns buttons to the right */
+    gap: 12px; /* Adds space between buttons */
+    padding: 15px 20px;
+    border-top: 1px solid var(--header-border);
+}
+
+/* Base style for both buttons */
+.modal-footer button {
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    border: 1px solid transparent;
+    transition: all 0.2s ease-in-out;
+}
+
+/* Style for the primary 'Save Customer' button */
+#save-customer-btn {
+    background-color: var(--primary-color);
+    color: var(--button-text);
+    border-color: var(--primary-color);
+}
+
+#save-customer-btn:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Style for the secondary 'Cancel' button */
+#cancel-customer-btn {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--input-border);
+}
+
+/* --- Cleaner Number Input Fields --- */
+/* Hide default spinner arrows on number inputs */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type=number] {
+  -moz-appearance: textfield; /* Firefox */
+  appearance: none;
+}
+
+/* --- Additional Polish --- */
+
+/* Enhanced Focus Ring for Inputs */
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus,
+.invoice-meta input:focus, .invoice-meta select:focus, textarea:focus,
+.invoice-table input:focus, .invoice-table select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+    outline: none;
+}
+
+/* Add a subtle 'lift' effect to modal buttons on hover */
+.modal-footer button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+/* --- Notification Pop-up Styles --- */
+.notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 500;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transform: translateX(120%);
+    opacity: 0;
+    transition: transform 0.4s ease-in-out, opacity 0.4s ease-in-out;
+    z-index: 2000;
+    max-width: 350px;
+}
+
+.notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notification.success {
+    background-color: #28a745; /* Green for success */
+}
+
+.notification.error {
+    background-color: #dc3545; /* Red for error */
+}
+
+.final-discount-table {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.final-discount-headers,
+.final-discount-inputs {
+    display: grid;
+    grid-template-columns: 70px 1fr;
+}
+
+.final-discount-headers {
+    background-color: var(--table-head-bg);
+    color: var(--text-color);
+}
+
+.final-discount-headers div {
+    padding: 6px 8px;
+    font-weight: 500;
+    font-size: 0.85em;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.final-discount-headers div:first-child {
+    border-right: 1px solid var(--input-border);
+}
+
+.final-discount-inputs input {
+    width: 100%;
+    border: none;
+    padding: 8px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    text-align: right;
+    border-radius: 0;
+}
+
+.final-discount-inputs input:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--primary-color);
+    z-index: 1;
+}
+
+.final-discount-inputs input:first-child {
+    border-right: 1px solid var(--input-border);
+    border-top: 1px solid var(--input-border);
+}
+
+.final-discount-inputs input:last-child {
+    border-top: 1px solid var(--input-border);
+}
+
+#cancel-customer-btn:hover {
+    background-color: var(--search-result-hover-bg);
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes slide-down { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
